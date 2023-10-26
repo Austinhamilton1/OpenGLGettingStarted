@@ -263,11 +263,26 @@ void OpenGLGraphicsEnvironment::LoadObjects()
     lineArrow->mesh->SetBuffer(vertexBuffer);
     m_renderer->AddVertexBuffer("linearrowbuffer", vertexBuffer);
 
+    auto bodyTmp = Generate::Cylinder(0.25f, 2.0f, 16, 16, { 0, 0, 1 }, ShadingType::Smooth_Shading);
+    auto body = std::make_shared<RigidBody>(2.0f, glm::vec3(1, 1, 1));
+    body->SetLinearVelocity(glm::vec3(0.001f, 0, 0));
+    body->mesh = std::move(bodyTmp->mesh);
+    m_allObjects["body"] = body;
+    vertexBuffer = std::make_shared<VertexBuffer>();
+    vertexBuffer->GenerateBufferId("VBO", BufferDataType::VertexData);
+    vertexBuffer->AddVertexAttribute("Position", 0, 3);
+    vertexBuffer->AddVertexAttribute("Color", 1, 3);
+    vertexBuffer->AddVertexAttribute("Normal", 2, 3);
+    vertexBuffer->StaticAllocate("VBO", body->mesh->GetVertexData());
+    body->mesh->SetBuffer(vertexBuffer);
+    m_renderer->AddVertexBuffer("bodybuffer", vertexBuffer);
+
     m_currentScene->AddObject("red cube", m_allObjects["red cube"]);
     m_currentScene->AddObject("white cube", m_allObjects["white cube"]);
     m_currentScene->AddObject("yellow cylinder", m_allObjects["yellow cylinder"]);
     m_currentScene->AddObject("flatsurface", m_allObjects["flatsurface"]);
     m_currentScene->AddObject("line arrow 1", m_allObjects["line arrow 1"]);
+    m_currentScene->AddObject("body", m_allObjects["body"]);
 
     auto rotateAnimation = std::make_unique<RotateAnimation>(90.0f, glm::vec3(0, 1, 0));
     m_allObjects["white cube"]->SetAnimation(std::move(rotateAnimation));

@@ -43,6 +43,12 @@ void ReferenceFrame::Move(const glm::vec3& vector)
 	this->orientation += translateMat;
 }
 
+void ReferenceFrame::MoveWorld(const glm::vec3& vector) {
+	glm::mat3 mat(orientation);
+	glm::vec3 worldVector = mat * vector;
+	this->Move(worldVector);
+}
+
 void ReferenceFrame::PointAt(float x, float y, float z)
 {
 	PointAt({ x, y, z });

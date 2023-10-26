@@ -21,5 +21,5 @@ public:
         m_animation = std::move(animation);
         m_animation->SetObject(this);
     }
-    void Update(double elapsedSeconds);
+    virtual void Update(double elapsedSeconds);
 };
