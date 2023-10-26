@@ -8,6 +8,8 @@
 #include <iostream>
 #include "RotateAnimation.h"
 #include "RotateAboutPivotAnimation.h"
+#include "RigidBody.h"
+#include "ForceGenerator.h"
 
 OpenGLGraphicsEnvironment::OpenGLGraphicsEnvironment(Logger& logger) : 
     m_logger(logger), m_majorVersion(4), m_minorVersion(6)
@@ -237,6 +239,25 @@ void OpenGLGraphicsEnvironment::LoadObjects()
 
     m_allObjects["line arrow 1"] = std::make_shared<GraphicsObject>();
     m_allObjects["line arrow 1"]->mesh = std::move(lineArrowMesh);
+
+    auto bodyMesh = Generate::Cylinder(0.25f, 2.0f, 16, 16, { 0, 0, 1 }, ShadingType::Smooth_Shading);
+    vertexBuffer = std::make_shared<VertexBuffer>();
+    vertexBuffer->GenerateBufferId("VBO", BufferDataType::VertexData);
+    vertexBuffer->AddVertexAttribute("Position", 0, 3);
+    vertexBuffer->AddVertexAttribute("Color", 1, 3);
+    vertexBuffer->AddVertexAttribute("Normal", 2, 3);
+    vertexBuffer->StaticAllocate("VBO", bodyMesh->GetVertexData());
+    bodyMesh->SetBuffer(vertexBuffer);
+    m_renderer->AddVertexBuffer("bodybuffer", vertexBuffer);
+
+    auto body = std::make_shared<RigidBody>();
+    body->SetMass(2.0f);
+    body->frame.SetPosition(-5.0f, 0.0f, 0.0f);
+    body->frame.Rotate(90.0f, glm::vec3(0, 0, 1));
+    body->AddForceAtBodyPoint(glm::vec3(2.5f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+    m_allObjects["body"] = body;
+    m_allObjects["body"]->mesh = std::move(bodyMesh);
 
     m_currentScene->AddObject("red cube", m_allObjects["red cube"]);
     m_currentScene->AddObject("white cube", m_allObjects["white cube"]);

@@ -1,8 +1,10 @@
 #include "RigidBody.h"
+#include "ForceGenerator.h"
 
 RigidBody::RigidBody(const float mass, const glm::vec3& pos) : linearVelocity(glm::vec3(0.0f)),
-	angularVelocity(glm::vec3(0.0f)), linearAcceleration(glm::vec3(0.0f)), forceAcc(glm::vec3(0.0f)),
-	torqueAcc(glm::vec3(0.0f)), transform(glm::mat4(0.0f)), linearDamping(0.99f), angularDamping(0.999f)
+	angularVelocity(glm::vec3(0.0f)), linearAcceleration(glm::vec3(0.0f)), 
+	angularAcceleration(glm::vec3(0.0f)),forceAcc(glm::vec3(0.0f)),
+	torqueAcc(glm::vec3(0.0f)), transform(glm::mat4(0.0f)), linearDamping(0.999f), angularDamping(0.999f)
 {
 	if (mass <= 0.0f)
 		inverseMass = 0;
@@ -11,6 +13,8 @@ RigidBody::RigidBody(const float mass, const glm::vec3& pos) : linearVelocity(gl
 	frame.SetPosition(pos);
 };
 
+RigidBody::RigidBody() : RigidBody(1.0f, glm::vec3(0, 0, 0)) {};
+
 void RigidBody::CaculateDerivedData() {
 	frame.orientation[0] = glm::normalize(frame.orientation[0]);
 	frame.orientation[1] = glm::normalize(frame.orientation[1]);
@@ -18,17 +22,15 @@ void RigidBody::CaculateDerivedData() {
 };
 
 void RigidBody::Integrate(float duration) {
-	glm::vec3 lastFrameAcceleration = linearAcceleration;
-	lastFrameAcceleration += (inverseMass * forceAcc);
+	linearAcceleration += (inverseMass * forceAcc);
 
-	linearVelocity += (duration * lastFrameAcceleration);
+	linearVelocity += (duration * linearAcceleration);
 
 	linearVelocity *= powf(linearDamping, duration);
 
 	glm::mat3 mat(frame.orientation);
-	glm::vec3 worldVelocity = mat * linearVelocity;
-	//frame.orientation[3] += worldVelocity;
-	frame.MoveWorld(glm::vec3(0.001f, 0.0f, 0.0f));
+	glm::vec3 worldVelocity = linearVelocity * mat;
+	frame.MoveWorld(duration * worldVelocity);
 
 	CaculateDerivedData();
 	ClearAccumulators();
@@ -43,6 +45,8 @@ void RigidBody::AddForceAtBodyPoint(const glm::vec3& force, const glm::vec3& poi
 
 void RigidBody::Update(double duration)
 {
+	Gravity g(0, -5.0f, 0);
+	g.updateForce(this, (float)duration);
 	Integrate((float)duration);
 }
 

@@ -4,5 +4,5 @@
 void Gravity::updateForce(RigidBody* body, float duration) {
 	if (body->HasInfiniteMass()) return;
 
-	body->AddForceAtBodyPoint(gravAcc * body->GetMass(), glm::vec3(0.0f));
+	body->AddForceAtBodyPoint(duration * gravAcc * body->GetMass(), glm::vec3(0.0f));
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <memory>
 #include "GraphicsObject.h"
 #include "ReferenceFrame.h"
 
@@ -21,8 +22,9 @@ protected:
 	glm::mat4 transform;
 
 public:
+	RigidBody();
 	RigidBody(const float mass, const glm::vec3& position);
-	~RigidBody() {};
+	virtual ~RigidBody() {};
 
 	void CaculateDerivedData();
 
@@ -37,5 +39,6 @@ public:
 	void SetLinearAcceleration(const glm::vec3& acc) { linearAcceleration = acc; };
 	void SetLinearAcceleration(float x, float y, float z) { SetLinearAcceleration( glm::vec3(x, y, z)); };
 	void Update(double duration);
-	void SetLinearVelocity(const glm::vec3& vel) { linearVelocity = vel; };
+	//void SetLinearVelocity(const glm::vec3& vel) { linearVelocity = vel; };
+	void SetMass(float mass) { inverseMass = (mass <= 0.0f) ? 0 : 1 / mass; };
 };
