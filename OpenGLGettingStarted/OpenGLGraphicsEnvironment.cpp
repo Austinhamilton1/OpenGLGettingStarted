@@ -254,6 +254,9 @@ void OpenGLGraphicsEnvironment::LoadObjects()
     body->SetMass(2.0f);
     body->frame.SetPosition(-5.0f, 0.0f, 0.0f);
     body->frame.Rotate(90.0f, glm::vec3(0, 0, 1));
+    auto g = std::make_unique<Gravity>();
+    g->SetAcceleration(0.0f, -4.0f, 0.0f);
+    body->constForces["gravity"] = std::move(g);
     body->AddForceAtBodyPoint(glm::vec3(2.5f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
     m_allObjects["body"] = body;

@@ -1,10 +1,16 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <memory>
+#include <unordered_map>
+#include <string>
 #include "GraphicsObject.h"
 #include "ReferenceFrame.h"
+#include "ForceGenerator.h"
 
 class RigidBody : public GraphicsObject {
+public:
+	std::unordered_map<std::string, std::unique_ptr<ForceGenerator>> constForces;
+
 protected:
 	float inverseMass;
 	float linearDamping;

@@ -45,8 +45,9 @@ void RigidBody::AddForceAtBodyPoint(const glm::vec3& force, const glm::vec3& poi
 
 void RigidBody::Update(double duration)
 {
-	Gravity g(0, -5.0f, 0);
-	g.updateForce(this, (float)duration);
+	for (auto& it : constForces) {
+		it.second->UpdateForce(this, (float)duration);
+	}
 	Integrate((float)duration);
 }
 
