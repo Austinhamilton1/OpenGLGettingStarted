@@ -151,6 +151,7 @@
     <ClCompile Include="RotateAboutPivotAnimation.cpp" />
     <ClCompile Include="RotateAnimation.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="TextFileReader.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="glad.c" />
@@ -168,6 +169,7 @@
     <ClInclude Include="ForceGenerator.h" />
     <ClInclude Include="Generate.h" />
     <ClInclude Include="GravityAnimation.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="HighResolutionTimer.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ReferenceFrame.h" />

@@ -17,4 +17,8 @@ void GraphicsObject::Update(double elapsedSeconds)
 	}
 }
 
+bool GraphicsObject::IsRigidBody() {
+	return false;
+}
+
 

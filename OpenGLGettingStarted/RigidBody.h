@@ -6,6 +6,7 @@
 #include "GraphicsObject.h"
 #include "ReferenceFrame.h"
 #include "ForceGenerator.h"
+#include "Shape.h"
 
 class RigidBody : public GraphicsObject {
 public:
@@ -25,11 +26,11 @@ protected:
 	glm::vec3 forceAcc;
 	glm::vec3 torqueAcc;
 
-	glm::mat4 transform;
+	glm::mat3 inverseInertiaTensor;
 
 public:
 	RigidBody();
-	RigidBody(const float mass, const glm::vec3& position);
+	RigidBody(const float mass, const glm::vec3& position, const glm::mat3& shape);
 	virtual ~RigidBody() {};
 
 	void CaculateDerivedData();
@@ -47,4 +48,6 @@ public:
 	void Update(double duration);
 	//void SetLinearVelocity(const glm::vec3& vel) { linearVelocity = vel; };
 	void SetMass(float mass) { inverseMass = (mass <= 0.0f) ? 0 : 1 / mass; };
+	void SetShape(const glm::mat3& shape);
+	bool IsRigidBody() { return true; };
 };

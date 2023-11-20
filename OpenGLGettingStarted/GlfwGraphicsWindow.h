@@ -20,6 +20,8 @@ public:
 	void Clear();
 	void NextFrame();
 	void GetWindowSize();
+	void GetCursorPos(double* x, double* y);
+	unsigned int GetMouseState(unsigned int whichKey);
 
 private:
 	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);

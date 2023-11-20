@@ -22,4 +22,5 @@ public:
         m_animation->SetObject(this);
     }
     virtual void Update(double elapsedSeconds);
+    virtual bool IsRigidBody();
 };

@@ -160,6 +160,20 @@ void OpenGLGraphicsEnvironment::CheckKeyState()
         m_camera->SetState(CameraState::StrafingRight);
         return;
     }
+    if (m_window->GetMouseState(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        double x, y;
+        m_window->GetCursorPos(&x, &y);
+
+        for (auto& it : m_allObjects) {
+            if (it.second->IsRigidBody()) {
+                std::shared_ptr<RigidBody> body = std::dynamic_pointer_cast<RigidBody>(it.second);
+            }
+        }
+        glm::mat3 projection = m_camera->GetProjection();
+        glm::vec3 vector(x, y, 1);
+        vector = glm::inverse(projection) * vector;
+        std::cout << "Done" << std::endl;
+    }
     m_camera->SetState(CameraState::NotMoving);
 }
 
@@ -240,7 +254,7 @@ void OpenGLGraphicsEnvironment::LoadObjects()
     m_allObjects["line arrow 1"] = std::make_shared<GraphicsObject>();
     m_allObjects["line arrow 1"]->mesh = std::move(lineArrowMesh);
 
-    auto bodyMesh = Generate::Cylinder(0.25f, 2.0f, 16, 16, { 0, 0, 1 }, ShadingType::Smooth_Shading);
+    auto bodyMesh = Generate::Cylinder(0.25f, 2.0f, 16, 16, { 1, 0, 0 }, ShadingType::Smooth_Shading);
     vertexBuffer = std::make_shared<VertexBuffer>();
     vertexBuffer->GenerateBufferId("VBO", BufferDataType::VertexData);
     vertexBuffer->AddVertexAttribute("Position", 0, 3);
@@ -252,12 +266,13 @@ void OpenGLGraphicsEnvironment::LoadObjects()
 
     auto body = std::make_shared<RigidBody>();
     body->SetMass(2.0f);
-    body->frame.SetPosition(-5.0f, 0.0f, 0.0f);
-    body->frame.Rotate(90.0f, glm::vec3(0, 0, 1));
+    body->SetShape(Shape::Cylinder(body->GetMass(), 0.25f, 2.0f));
+    body->frame.SetPosition(-4.0f,1.0f, 0.0f);
+    //body->frame.Rotate(90.0f, glm::vec3(0, 0, 1));
     auto g = std::make_unique<Gravity>();
     g->SetAcceleration(0.0f, -4.0f, 0.0f);
-    body->constForces["gravity"] = std::move(g);
-    body->AddForceAtBodyPoint(glm::vec3(2.5f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    //body->constForces["gravity"] = std::move(g);
+    body->AddForceAtBodyPoint(glm::vec3(3.5f, 0.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f));
 
     m_allObjects["body"] = body;
     m_allObjects["body"]->mesh = std::move(bodyMesh);

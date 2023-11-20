@@ -90,3 +90,11 @@ void GlfwGraphicsWindow::framebufferSizeCallback(GLFWwindow* window, int width, 
 {
 	glViewport(0, 0, width, height);
 }
+
+void GlfwGraphicsWindow::GetCursorPos(double* x, double* y) {
+	glfwGetCursorPos(m_window, x, y);
+}
+
+unsigned int GlfwGraphicsWindow::GetMouseState(unsigned int whichKey) {
+	return glfwGetMouseButton(m_window, whichKey);
+}

@@ -1,19 +1,20 @@
 #include "RigidBody.h"
 #include "ForceGenerator.h"
 
-RigidBody::RigidBody(const float mass, const glm::vec3& pos) : linearVelocity(glm::vec3(0.0f)),
+RigidBody::RigidBody(const float mass, const glm::vec3& pos, const glm::mat3& shape) : linearVelocity(glm::vec3(0.0f)),
 	angularVelocity(glm::vec3(0.0f)), linearAcceleration(glm::vec3(0.0f)), 
 	angularAcceleration(glm::vec3(0.0f)),forceAcc(glm::vec3(0.0f)),
-	torqueAcc(glm::vec3(0.0f)), transform(glm::mat4(0.0f)), linearDamping(0.999f), angularDamping(0.999f)
+	torqueAcc(glm::vec3(0.0f)), linearDamping(0.999f), angularDamping(0.999f)
 {
 	if (mass <= 0.0f)
 		inverseMass = 0;
 	inverseMass = 1 / mass;
+	inverseInertiaTensor = glm::inverse(shape);
 	frame = ReferenceFrame();
 	frame.SetPosition(pos);
 };
 
-RigidBody::RigidBody() : RigidBody(1.0f, glm::vec3(0, 0, 0)) {};
+RigidBody::RigidBody() : RigidBody(1.0f, glm::vec3(0, 0, 0), Shape::Cylinder(1.0f, 1.0f, 1.0f)) {};
 
 void RigidBody::CaculateDerivedData() {
 	frame.orientation[0] = glm::normalize(frame.orientation[0]);
@@ -23,14 +24,23 @@ void RigidBody::CaculateDerivedData() {
 
 void RigidBody::Integrate(float duration) {
 	linearAcceleration += (inverseMass * forceAcc);
+	glm::mat3 mat(frame.orientation);
+	glm::mat3 worldInertiaTensor(1.0f);
+	worldInertiaTensor *= (mat * inverseInertiaTensor * glm::transpose(mat));
+	angularAcceleration += (worldInertiaTensor * torqueAcc);
 
 	linearVelocity += (duration * linearAcceleration);
+	angularVelocity += (duration * angularAcceleration);
 
 	linearVelocity *= powf(linearDamping, duration);
+	angularVelocity *= powf(angularDamping, duration);
 
-	glm::mat3 mat(frame.orientation);
 	glm::vec3 worldVelocity = linearVelocity * mat;
 	frame.MoveWorld(duration * worldVelocity);
+
+	frame.Rotate(glm::degrees(duration * angularVelocity[0]), glm::vec3(1.0f, 0, 0));
+	frame.Rotate(glm::degrees(duration * angularVelocity[1]), glm::vec3(0, 1.0f, 0));
+	frame.Rotate(glm::degrees(duration * angularVelocity[2]), glm::vec3(0, 0, 1.0f));
 
 	CaculateDerivedData();
 	ClearAccumulators();
@@ -59,4 +69,8 @@ void RigidBody::AddForceAtPoint(const glm::vec3& force, const glm::vec3& point) 
 
 	forceAcc += force;
 	torqueAcc += glm::cross(pt, force);
+};
+
+void RigidBody::SetShape(const glm::mat3& shape) {
+	inverseInertiaTensor = glm::inverse(shape);
 };
