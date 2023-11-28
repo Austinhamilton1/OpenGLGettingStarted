@@ -1,10 +1,12 @@
 #pragma once
 #include "AbstractGraphicsWindow.h"
+#include <unordered_map>
 class GlfwGraphicsWindow :  public AbstractGraphicsWindow
 {
 protected:
 	int m_openglMajorVersion, m_openglMinorVersion;
 	GLFWwindow* m_window;
+	std::unordered_map<unsigned int, void (*)()> callbackFunctions;
 
 public:
 	GlfwGraphicsWindow(string title, int width = 800, int height = 600);
@@ -20,8 +22,8 @@ public:
 	void Clear();
 	void NextFrame();
 	void GetWindowSize();
-	void GetCursorPos(double* x, double* y);
-	unsigned int GetMouseState(unsigned int whichKey);
+	void SetCallback(void (*callback) (GLFWwindow*, int, int, int, int));
+	void AddData(void* data);
 
 private:
 	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);

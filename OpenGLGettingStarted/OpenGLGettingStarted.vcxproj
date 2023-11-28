@@ -141,6 +141,7 @@
     <ClCompile Include="AbstractGraphicsWindow.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ForceGenerator.cpp" />
+    <ClCompile Include="ForceObject.cpp" />
     <ClCompile Include="Generate.cpp" />
     <ClCompile Include="GravityAnimation.cpp" />
     <ClCompile Include="HighResolutionTimer.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="AbstractAnimation.h" />
     <ClInclude Include="AbstractGraphicsWindow.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ForceObject.h" />
     <ClInclude Include="ForceGenerator.h" />
     <ClInclude Include="Generate.h" />
     <ClInclude Include="GravityAnimation.h" />

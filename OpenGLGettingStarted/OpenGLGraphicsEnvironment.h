@@ -10,6 +10,10 @@
 class GlfwGraphicsWindow;
 class AbstractGraphicsWindow;
 
+enum KeyboardInput {
+	CameraMovement, ForceMovement
+};
+
 class OpenGLGraphicsEnvironment
 {
 protected:
@@ -17,19 +21,21 @@ protected:
 	int m_majorVersion, m_minorVersion;
 	std::shared_ptr<GlfwGraphicsWindow> m_window;
 	std::map<std::string,std::shared_ptr<Shader>> m_shaders;
-	std::shared_ptr<Scene> m_currentScene;
-	std::map<std::string, std::shared_ptr<GraphicsObject>> m_allObjects;
 	std::shared_ptr<Camera> m_camera;
-	std::unique_ptr<Renderer> m_renderer;
 	std::unique_ptr<HighResolutionTimer> m_timer;
+	KeyboardInput whichObject;
 
 public:
+	std::shared_ptr<Scene> m_currentScene;
+	std::unique_ptr<Renderer> m_renderer;
+	std::map<std::string, std::shared_ptr<GraphicsObject>> m_allObjects;
 	OpenGLGraphicsEnvironment(Logger& logger);
 	void SetVersion(int majorVersion, int minorVersion);
 	void SetGraphicsWindow(std::shared_ptr<AbstractGraphicsWindow> window);
 	void Initialize();
 	void Run();
 	void CheckKeyState();
+	void ToggleInput();
 
 protected:
 	void LoadObjects();

@@ -91,10 +91,10 @@ void GlfwGraphicsWindow::framebufferSizeCallback(GLFWwindow* window, int width, 
 	glViewport(0, 0, width, height);
 }
 
-void GlfwGraphicsWindow::GetCursorPos(double* x, double* y) {
-	glfwGetCursorPos(m_window, x, y);
+void GlfwGraphicsWindow::SetCallback(void (*callback)(GLFWwindow*, int, int, int, int)) {
+	glfwSetKeyCallback(m_window, callback);
 }
 
-unsigned int GlfwGraphicsWindow::GetMouseState(unsigned int whichKey) {
-	return glfwGetMouseButton(m_window, whichKey);
+void GlfwGraphicsWindow::AddData(void* data) {
+	glfwSetWindowUserPointer(m_window, data);
 }

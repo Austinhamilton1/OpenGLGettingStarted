@@ -10,9 +10,10 @@
 #include "RotateAboutPivotAnimation.h"
 #include "RigidBody.h"
 #include "ForceGenerator.h"
+#include "ForceObject.h"
 
 OpenGLGraphicsEnvironment::OpenGLGraphicsEnvironment(Logger& logger) : 
-    m_logger(logger), m_majorVersion(4), m_minorVersion(6)
+    m_logger(logger), m_majorVersion(4), m_minorVersion(6), whichObject(KeyboardInput::CameraMovement)
 {
 }
 
@@ -25,6 +26,39 @@ void OpenGLGraphicsEnvironment::SetVersion(int majorVersion, int minorVersion)
 void OpenGLGraphicsEnvironment::SetGraphicsWindow(std::shared_ptr<AbstractGraphicsWindow> window)
 {
 	m_window = dynamic_pointer_cast<GlfwGraphicsWindow>(window);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    OpenGLGraphicsEnvironment* env = (OpenGLGraphicsEnvironment*)glfwGetWindowUserPointer(window);
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        if (env->m_allObjects.count("force") == 1)
+            return;
+        auto lineArrowMesh = Generate::LineArrow(1.0f, { 1, 0, 0 });
+        auto vertexBuffer = std::make_shared<VertexBuffer>(6);
+        vertexBuffer->SetPrimitiveType(GL_LINES);
+        vertexBuffer->GenerateBufferId("VBO", BufferDataType::VertexData);
+        vertexBuffer->GenerateBufferId("IBO", BufferDataType::IndexData);
+        vertexBuffer->SetIsIndexed(true);
+        vertexBuffer->AddVertexAttribute("Position", 0, 3);
+        vertexBuffer->AddVertexAttribute("Color", 1, 3);
+        vertexBuffer->StaticAllocate("VBO", lineArrowMesh->GetVertexData());
+        vertexBuffer->StaticAllocate("IBO", lineArrowMesh->GetIndexData());
+        lineArrowMesh->SetBuffer(vertexBuffer);
+        env->m_renderer->AddVertexBuffer("force", vertexBuffer);
+
+        auto force = std::make_shared<ForceObject>();
+        force->magnitude = 1.0f;
+        force->frame.SetPosition(glm::vec3(-1.0, 3.0f, 0.0f));
+        force->normal = glm::vec3(1.0f, 0.0f, 0.0f);
+        env->m_allObjects["force"] = force;
+        env->m_allObjects["force"]->mesh = std::move(lineArrowMesh);
+        env->m_currentScene->AddObject("force", env->m_allObjects["force"]);
+        return;
+    }
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+        env->ToggleInput();
+        return;
+    }
 }
 
 void OpenGLGraphicsEnvironment::Initialize()
@@ -68,6 +102,9 @@ void OpenGLGraphicsEnvironment::Initialize()
 
     LoadShaders();
     LoadObjects();
+
+    m_window->AddData((void*)this);
+    m_window->SetCallback(key_callback);
 
     m_camera->frame.SetPosition(0.0f, 2.0f, 6.0f);
 }
@@ -129,52 +166,114 @@ void OpenGLGraphicsEnvironment::CheckKeyState()
     }
 
     if (m_window->GetKeyState(GLFW_KEY_D) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::TurningRight);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::TurningRight);
+        else if(m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::TurningRight);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_A) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::TurningLeft);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::TurningLeft);
+        else if(m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::TurningLeft);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_W) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::MovingForward);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::MovingForward);
+        else if(m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::MovingForward);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_S) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::MovingBackward);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::MovingBackward);
+        else if (m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::MovingBackward);
+        }
+        return;
+    }
+    if (m_window->GetKeyState(GLFW_KEY_Q) == GLFW_PRESS) {
+        if (m_allObjects.count("force") == 1 && whichObject == KeyboardInput::ForceMovement) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::TurningUp);
+        }
+        return;
+    }
+    if (m_window->GetKeyState(GLFW_KEY_E) == GLFW_PRESS) {
+        if (m_allObjects.count("force") == 1 && whichObject == KeyboardInput::ForceMovement) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::TurningDown);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_UP) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::MovingUp);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::MovingUp);
+        else if (m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::MovingUp);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_DOWN) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::MovingDown);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::MovingDown);
+        else if (m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::MovingDown);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_LEFT) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::StrafingLeft);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::StrafingLeft);
+        else if (m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::StrafingLeft);
+        }
         return;
     }
     if (m_window->GetKeyState(GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        m_camera->SetState(CameraState::StrafingRight);
+        if(whichObject == KeyboardInput::CameraMovement)
+            m_camera->SetState(CameraState::StrafingRight);
+        else if (m_allObjects.count("force") == 1) {
+            std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+            force->SetState(ForceObjectState::StrafingRight);
+        }
         return;
     }
-    if (m_window->GetMouseState(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        double x, y;
-        m_window->GetCursorPos(&x, &y);
-
+    if (m_window->GetKeyState(GLFW_KEY_SPACE) == GLFW_PRESS) {
         for (auto& it : m_allObjects) {
-            if (it.second->IsRigidBody()) {
+            if (it.second->IsRigidBody() && m_allObjects.count("force") == 1) {
                 std::shared_ptr<RigidBody> body = std::dynamic_pointer_cast<RigidBody>(it.second);
+                std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+                glm::vec3 forceValue = force->normal * force->magnitude;
+                glm::vec3 point = glm::mat3(force->frame.orientation) * force->frame.GetPosition();
+                body->AddForceAtPoint(forceValue, point);
             }
         }
-        glm::mat3 projection = m_camera->GetProjection();
-        glm::vec3 vector(x, y, 1);
-        vector = glm::inverse(projection) * vector;
-        std::cout << "Done" << std::endl;
+        return;
+    }
+    if (m_window->GetKeyState(GLFW_KEY_I) == GLFW_PRESS) {
+        if (m_allObjects.count("force") == 0)
+            return;
+
+        return;
     }
     m_camera->SetState(CameraState::NotMoving);
+    if (m_allObjects.count("force") == 1) {
+        std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+        force->SetState(ForceObjectState::NotMoving);
+    }
 }
 
 void OpenGLGraphicsEnvironment::LoadObjects()
@@ -267,12 +366,12 @@ void OpenGLGraphicsEnvironment::LoadObjects()
     auto body = std::make_shared<RigidBody>();
     body->SetMass(2.0f);
     body->SetShape(Shape::Cylinder(body->GetMass(), 0.25f, 2.0f));
-    body->frame.SetPosition(-4.0f,1.0f, 0.0f);
+    body->frame.SetPosition(0.0f, 1.0f, 0.0f);
     //body->frame.Rotate(90.0f, glm::vec3(0, 0, 1));
-    auto g = std::make_unique<Gravity>();
-    g->SetAcceleration(0.0f, -4.0f, 0.0f);
+    //auto g = std::make_unique<Gravity>();
+    //g->SetAcceleration(0.0f, -4.0f, 0.0f);
     //body->constForces["gravity"] = std::move(g);
-    body->AddForceAtBodyPoint(glm::vec3(3.5f, 0.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f));
+    //body->AddForceAtBodyPoint(glm::vec3(13.5f, 0.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f));
 
     m_allObjects["body"] = body;
     m_allObjects["body"]->mesh = std::move(bodyMesh);
@@ -415,3 +514,9 @@ void OpenGLGraphicsEnvironment::ReadShadersFromFiles(const std::string& vertexFi
     m_shaders["basic3dlighting"] = shader;
 }
 
+void OpenGLGraphicsEnvironment::ToggleInput() {
+    if (whichObject == KeyboardInput::CameraMovement)
+        whichObject = KeyboardInput::ForceMovement;
+    else
+        whichObject = KeyboardInput::CameraMovement;
+}

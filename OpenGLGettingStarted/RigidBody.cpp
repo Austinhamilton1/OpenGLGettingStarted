@@ -23,12 +23,12 @@ void RigidBody::CaculateDerivedData() {
 };
 
 void RigidBody::Integrate(float duration) {
-	linearAcceleration += (inverseMass * forceAcc);
+	linearAcceleration = (inverseMass * forceAcc);
 	glm::mat3 mat(frame.orientation);
 	glm::mat3 worldInertiaTensor(1.0f);
 	worldInertiaTensor *= (mat * inverseInertiaTensor * glm::transpose(mat));
-	angularAcceleration += (worldInertiaTensor * torqueAcc);
-
+	angularAcceleration = (worldInertiaTensor * torqueAcc);
+	
 	linearVelocity += (duration * linearAcceleration);
 	angularVelocity += (duration * angularAcceleration);
 
@@ -38,9 +38,13 @@ void RigidBody::Integrate(float duration) {
 	glm::vec3 worldVelocity = linearVelocity * mat;
 	frame.MoveWorld(duration * worldVelocity);
 
-	frame.Rotate(glm::degrees(duration * angularVelocity[0]), glm::vec3(1.0f, 0, 0));
-	frame.Rotate(glm::degrees(duration * angularVelocity[1]), glm::vec3(0, 1.0f, 0));
-	frame.Rotate(glm::degrees(duration * angularVelocity[2]), glm::vec3(0, 0, 1.0f));
+	frame.Rotate(glm::degrees(duration * angularVelocity.x), glm::vec3(1.0f, 0, 0));
+	frame.Rotate(glm::degrees(duration * angularVelocity.y), glm::vec3(0, 1.0f, 0));
+	frame.Rotate(glm::degrees(duration * angularVelocity.z), glm::vec3(0, 0, 1.0f));
+
+	//frame.Rotate(duration * angularVelocity.x, glm::vec3(1.0f, 0, 0));
+	//frame.Rotate(duration * angularVelocity.y, glm::vec3(0, 1.0f, 0));
+	//frame.Rotate(duration * angularVelocity.z, glm::vec3(0, 0, 1.0f));
 
 	CaculateDerivedData();
 	ClearAccumulators();
