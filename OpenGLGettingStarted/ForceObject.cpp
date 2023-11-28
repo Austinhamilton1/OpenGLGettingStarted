@@ -6,13 +6,13 @@ void ForceObject::Update(double elapsedSeconds)
 	case ForceObjectState::NotMoving:
 		break;
 	case ForceObjectState::MovingForward: {
-		auto forward = -frame.GetZAxis();
+		auto forward = -m_camera->frame.GetZAxis();
 		forward *= (2.0 * elapsedSeconds);
 		frame.Move(forward);
 		break;
 	}
 	case ForceObjectState::MovingBackward: {
-		auto backward = frame.GetZAxis();
+		auto backward = m_camera->frame.GetZAxis();
 		backward *= (2.0 * elapsedSeconds);
 		frame.Move(backward);
 		break;
@@ -31,34 +31,44 @@ void ForceObject::Update(double elapsedSeconds)
 	}
 	case ForceObjectState::TurningRight: {
 		auto turnAngle = -90.0 * elapsedSeconds;
-		frame.Rotate((float)turnAngle, frame.GetYAxis());
+		frame.Rotate((float)turnAngle, m_camera->frame.GetYAxis());
 		break;
 	}
 	case ForceObjectState::TurningLeft: {
 		auto turnAngle = 90.0 * elapsedSeconds;
-		frame.Rotate((float)turnAngle, frame.GetYAxis());
+		frame.Rotate((float)turnAngle, m_camera->frame.GetYAxis());
 		break;
 	}
 	case ForceObjectState::TurningDown: {
 		auto turnAngle = -90.0 * elapsedSeconds;
-		frame.Rotate((float)turnAngle, frame.GetZAxis());
+		frame.Rotate((float)turnAngle, m_camera->frame.GetZAxis());
 		break;
 	}
 	case ForceObjectState::TurningUp: {
 		auto turnAngle = 90.0 * elapsedSeconds;
-		frame.Rotate((float)turnAngle, frame.GetZAxis());
+		frame.Rotate((float)turnAngle, m_camera->frame.GetZAxis());
 		break;
 	}
 	case ForceObjectState::StrafingRight: {
-		auto right = frame.GetXAxis();
+		auto right = m_camera->frame.GetXAxis();
 		right *= (2.0 * elapsedSeconds);
 		frame.Move(right);
 		break;
 	}
 	case ForceObjectState::StrafingLeft: {
-		auto left = -frame.GetXAxis();
+		auto left = -m_camera->frame.GetXAxis();
 		left *= (2.0 * elapsedSeconds);
 		frame.Move(left);
+		break;
+	}
+	case ForceObjectState::Growing: {
+		if(magnitude <= 100)
+			magnitude += (2.0 * elapsedSeconds);
+		break;
+	}
+	case ForceObjectState::Shrinking: {
+		if(magnitude > 2.0 * elapsedSeconds)
+			magnitude -= (2.0 * elapsedSeconds);
 		break;
 	}
 	}

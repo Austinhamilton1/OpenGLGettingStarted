@@ -47,9 +47,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         env->m_renderer->AddVertexBuffer("force", vertexBuffer);
 
         auto force = std::make_shared<ForceObject>();
-        force->magnitude = 1.0f;
-        force->frame.SetPosition(glm::vec3(-1.0, 3.0f, 0.0f));
-        force->normal = glm::vec3(1.0f, 0.0f, 0.0f);
+        force->SetPosition(-1, 3, 0);
+        force->SetCamera(env->m_camera);
         env->m_allObjects["force"] = force;
         env->m_allObjects["force"]->mesh = std::move(lineArrowMesh);
         env->m_currentScene->AddObject("force", env->m_allObjects["force"]);
@@ -263,10 +262,18 @@ void OpenGLGraphicsEnvironment::CheckKeyState()
         }
         return;
     }
-    if (m_window->GetKeyState(GLFW_KEY_I) == GLFW_PRESS) {
-        if (m_allObjects.count("force") == 0)
-            return;
-
+    if (m_window->GetKeyState(GLFW_KEY_I) == GLFW_PRESS && 
+        m_allObjects.count("force") == 1 &&
+        whichObject == KeyboardInput::ForceMovement) {
+        std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+        force->SetState(ForceObjectState::Growing);
+        return;
+    }
+    if (m_window->GetKeyState(GLFW_KEY_K) == GLFW_PRESS &&
+        m_allObjects.count("force") == 1 &&
+        whichObject == KeyboardInput::ForceMovement) {
+        std::shared_ptr<ForceObject> force = std::dynamic_pointer_cast<ForceObject>(m_allObjects["force"]);
+        force->SetState(ForceObjectState::Shrinking);
         return;
     }
     m_camera->SetState(CameraState::NotMoving);
